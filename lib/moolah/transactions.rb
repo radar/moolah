@@ -1,23 +1,32 @@
+require 'forwardable'
+
 module Moolah
   class Transactions
+    extend Forwardable
+
+    delegate [:<<, :count] => :@transactions
+    alias_method :add, :<<
+
     def initialize
       @transactions = []
     end
 
-    def add(transaction)
-      @transactions << transaction
-    end
-
     def income
-      @transactions.map(&:amount).select { |amount| amount > 0 }.sum
+      sum { |amount| amount > 0 }
     end
 
     def expenses
-      @transactions.map(&:amount).select { |amount| amount < 0 }.sum
+      sum { |amount| amount < 0 }
     end
 
-    def count
-      @transactions.count
+    private
+
+    def sum(&block)
+      amounts.select(&block).sum
+    end
+
+    def amounts
+      @transactions.map(&:amount)
     end
   end
 end
