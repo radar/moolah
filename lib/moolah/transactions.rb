@@ -1,14 +1,12 @@
 require 'forwardable'
 
 module Moolah
-  class Transactions
-    extend Forwardable
-
-    delegate [:<<, :count] => :@transactions
+  class Transactions < Array
     alias_method :add, :<<
 
-    def initialize
-      @transactions = []
+    def initialize(transactions = [])
+      super
+      self.replace(transactions)
     end
 
     def income
@@ -19,14 +17,20 @@ module Moolah
       sum { |amount| amount < 0 }
     end
 
+    def between(start, finish)
+      self.class.new(select do |transaction|
+        (start..finish).include?(transaction.date)
+      end)
+    end
+
+    def amount(&condition)
+      self.class.new(select { |t| condition[t.amount] })
+    end
+
     private
 
     def sum(&block)
-      amounts.select(&block).sum
-    end
-
-    def amounts
-      @transactions.map(&:amount)
+      map(&:amount).select(&block).sum
     end
   end
 end
