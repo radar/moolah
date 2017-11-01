@@ -18,13 +18,17 @@ module Moolah
     end
 
     def between(start, finish)
-      self.class.new(select do |transaction|
+      filter do |transaction|
         (start..finish).include?(transaction.date)
-      end)
+      end
     end
 
     def amount(&condition)
-      self.class.new(select { |t| condition[t.amount] })
+      filter { |t| condition[t.amount] }
+    end
+
+    def filter(&block)
+      self.class.new(select(&block))
     end
 
     private
