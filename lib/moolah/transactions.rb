@@ -19,7 +19,7 @@ module Moolah
 
     def between(start, finish)
       filter do |transaction|
-        (start..finish).include?(transaction.date)
+        (start..finish).cover?(transaction.date)
       end
     end
 
